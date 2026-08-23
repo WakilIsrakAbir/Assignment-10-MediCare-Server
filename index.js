@@ -51,7 +51,7 @@ const connectDB = async () => {
 };
 
 // Mount Better Auth & API Routes
-app.all('/api/better-auth/*', async (req, res, next) => {
+app.all('/api/better-auth/*splat', async (req, res, next) => {
   try {
     const { getAuth } = await import('./config/auth.js');
     const { toNodeHandler } = await import('better-auth/node');
