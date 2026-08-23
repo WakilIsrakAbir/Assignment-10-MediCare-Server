@@ -5,6 +5,12 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import mongoose from 'mongoose';
 
+import authRoutes from './routes/authRoutes.js';
+import doctorRoutes from './routes/doctorRoutes.js';
+import statsRoutes from './routes/statsRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
+import { seedInitialData } from './utils/seedData.js';
+
 dotenv.config();
 
 const app = express();
@@ -31,6 +37,7 @@ const connectDB = async () => {
     if (process.env.MONGODB_URI) {
       await mongoose.connect(process.env.MONGODB_URI);
       console.log('MongoDB Connected Successfully');
+      await seedInitialData();
     } else {
       console.log('MONGODB_URI not found in environment variables.');
     }
@@ -39,11 +46,17 @@ const connectDB = async () => {
   }
 };
 
+// Mount API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/doctors', doctorRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/reviews', reviewRoutes);
+
 // Root Health Check Route
 app.get('/', (req, res) => {
   res.status(200).json({
     status: 'success',
-    message: 'Medicare API Server is running smoothly',
+    message: 'MediCare Connect API Server is running smoothly',
     timestamp: new Date().toISOString(),
   });
 });
@@ -59,6 +72,6 @@ app.use((err, req, res, next) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`Medicare Server running on port ${PORT}`);
+  console.log(`MediCare Server running on port ${PORT}`);
   connectDB();
 });
