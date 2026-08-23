@@ -9,6 +9,10 @@ import authRoutes from './routes/authRoutes.js';
 import doctorRoutes from './routes/doctorRoutes.js';
 import statsRoutes from './routes/statsRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import appointmentRoutes from './routes/appointmentRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import prescriptionRoutes from './routes/prescriptionRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import { seedInitialData } from './utils/seedData.js';
 
 dotenv.config();
@@ -51,6 +55,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/prescriptions', prescriptionRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Root Health Check Route
 app.get('/', (req, res) => {
