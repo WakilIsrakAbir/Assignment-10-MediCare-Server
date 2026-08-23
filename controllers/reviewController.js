@@ -1,9 +1,14 @@
 import Review from '../models/Review.js';
 import Doctor from '../models/Doctor.js';
+import { fallbackReviews } from '../utils/seedData.js';
+import mongoose from 'mongoose';
 
 // Get Featured Reviews for Homepage
 export const getFeaturedReviews = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({ success: true, count: fallbackReviews.length, data: fallbackReviews });
+    }
     const reviews = await Review.find()
       .sort({ rating: -1, createdAt: -1 })
       .limit(6)
@@ -12,10 +17,10 @@ export const getFeaturedReviews = async (req, res) => {
     return res.status(200).json({
       success: true,
       count: reviews.length,
-      data: reviews,
+      data: reviews.length > 0 ? reviews : fallbackReviews,
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Error fetching reviews', error: error.message });
+    return res.status(200).json({ success: true, count: fallbackReviews.length, data: fallbackReviews });
   }
 };
 
