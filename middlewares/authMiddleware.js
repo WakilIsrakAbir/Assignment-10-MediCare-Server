@@ -57,7 +57,14 @@ export const verifyToken = async (req, res, next) => {
     }
 
     if (!user && decoded && decoded.email) {
-      user = memoryUsers.get(decoded.email.toLowerCase().trim());
+      user = memoryUsers.get(decoded.email.toLowerCase().trim()) || {
+        _id: decoded.id || decoded.userId || 'usr_session',
+        name: decoded.name || decoded.email.split('@')[0],
+        email: decoded.email,
+        role: decoded.role || 'patient',
+        Photo: decoded.Photo || '',
+        status: 'active',
+      };
     }
 
     if (!user && decoded && decoded.email === 'admin@medicare.com') {

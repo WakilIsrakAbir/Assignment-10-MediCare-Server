@@ -9,7 +9,13 @@ export const memoryDoctors = new Map();
 
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user._id, email: user.email, role: user.role },
+    {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      Photo: user.Photo || '',
+    },
     process.env.JWT_SECRET || 'medicare_secret_dev_key_12345',
     { expiresIn: '7d' }
   );
