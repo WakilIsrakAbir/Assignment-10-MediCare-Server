@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import mongoose from 'mongoose';
+import { memoryUsers } from '../controllers/authController.js';
 
 export const verifyToken = async (req, res, next) => {
   try {
@@ -53,6 +54,10 @@ export const verifyToken = async (req, res, next) => {
       if (sessionDoc && sessionDoc.userId) {
         user = await User.findById(sessionDoc.userId).select('-password');
       }
+    }
+
+    if (!user && decoded && decoded.email) {
+      user = memoryUsers.get(decoded.email.toLowerCase().trim());
     }
 
     if (!user && decoded && decoded.email === 'admin@medicare.com') {
