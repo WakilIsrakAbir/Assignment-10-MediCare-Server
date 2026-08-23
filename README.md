@@ -28,16 +28,7 @@ cd Assignment-10-MediCare-Server
 npm install
 ```
 
-### 3. Environment Variables Configuration
-Create a `.env` file in the root directory:
-```env
-PORT=5000
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/medicareDB?retryWrites=true&w=majority
-JWT_SECRET=your_super_secret_jwt_key
-CLIENT_URL=http://localhost:3000
-```
-
-### 4. Running the Server
+### 3. Running the Server
 ```bash
 # Development mode with hot-reload
 npm run dev
