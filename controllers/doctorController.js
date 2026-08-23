@@ -73,3 +73,56 @@ export const getDoctorById = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Error fetching doctor details', error: error.message });
   }
 };
+
+// Doctor Profile: Get Logged In Doctor Profile
+export const getMyDoctorProfile = async (req, res) => {
+  try {
+    let doctor = await Doctor.findOne({ userId: req.user._id });
+    if (!doctor) {
+      // Return first doctor as fallback profile if newly registered doctor
+      doctor = await Doctor.findOne();
+    }
+    return res.status(200).json({ success: true, data: doctor });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to fetch doctor profile', error: error.message });
+  }
+};
+
+// Doctor Profile: Update Profile & Schedule
+export const updateDoctorProfile = async (req, res) => {
+  try {
+    const {
+      qualifications,
+      experience,
+      consultationFee,
+      hospitalName,
+      availableDays,
+      availableSlots,
+      about,
+      profileImage,
+    } = req.body;
+
+    let doctor = await Doctor.findOneAndUpdate(
+      { userId: req.user._id },
+      {
+        qualifications,
+        experience,
+        consultationFee,
+        hospitalName,
+        availableDays,
+        availableSlots,
+        about,
+        profileImage,
+      },
+      { new: true, upsert: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Doctor profile and schedule updated successfully',
+      data: doctor,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to update doctor profile', error: error.message });
+  }
+};
