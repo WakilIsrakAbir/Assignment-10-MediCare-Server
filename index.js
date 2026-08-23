@@ -50,7 +50,17 @@ const connectDB = async () => {
   }
 };
 
-// Mount API Routes
+// Mount Better Auth & API Routes
+app.all('/api/better-auth/*', async (req, res, next) => {
+  try {
+    const { getAuth } = await import('./config/auth.js');
+    const { toNodeHandler } = await import('better-auth/node');
+    return toNodeHandler(getAuth())(req, res);
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/stats', statsRoutes);
