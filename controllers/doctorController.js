@@ -144,7 +144,12 @@ export const updateDoctorProfile = async (req, res) => {
     if (availableDays) doctor.availableDays = availableDays;
     if (availableSlots) doctor.availableSlots = availableSlots;
     if (about) doctor.about = about;
-    if (profileImage) doctor.profileImage = profileImage;
+    if (profileImage) {
+      doctor.profileImage = profileImage;
+      try {
+        await User.findByIdAndUpdate(req.user._id, { Photo: profileImage });
+      } catch (err) {}
+    }
 
     await doctor.save();
 
