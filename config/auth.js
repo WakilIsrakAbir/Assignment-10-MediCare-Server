@@ -25,6 +25,12 @@ export const getAuth = () => {
       minPasswordLength: 6,
       autoSignIn: true,
     },
+    socialProviders: {
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'YOUR_GOOGLE_CLIENT_SECRET',
+      },
+    },
     user: {
       additionalFields: {
         role: {
