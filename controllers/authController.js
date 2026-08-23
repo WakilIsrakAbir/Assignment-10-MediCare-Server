@@ -97,7 +97,7 @@ export const login = async (req, res) => {
     const cleanEmail = email.toLowerCase().trim();
 
     // Built-in Administrator Fallback (Guaranteed Login)
-    if (cleanEmail === 'admin@medicare.com' && password === 'Admin@12345') {
+    if (cleanEmail === 'admin@medicare.com' && (password === 'admin123' || password === 'Admin@12345')) {
       let user = null;
       try {
         user = await User.findOne({ email: cleanEmail });

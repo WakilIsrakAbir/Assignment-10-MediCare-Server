@@ -3,15 +3,15 @@ import bcrypt from 'bcryptjs';
 
 export const seedInitialData = async () => {
   try {
-    // 1. Ensure Default Admin Account Exists
+    // 1. Ensure Default Admin Account Exists with password admin123
     const adminEmail = 'admin@medicare.com';
     const existingAdmin = await User.findOne({ email: adminEmail });
 
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash('admin123', salt);
+
     if (!existingAdmin) {
       console.log('Creating default MediCare administrator account in database...');
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash('Admin@12345', salt);
-
       await User.create({
         name: 'MediCare Administrator',
         email: adminEmail,
@@ -22,10 +22,12 @@ export const seedInitialData = async () => {
         phone: '+1 (800) 555-0199',
         gender: 'Other',
       });
-      console.log('✅ Default Admin created: admin@medicare.com / Admin@12345');
-    } else if (existingAdmin.role !== 'admin') {
+      console.log('✅ Default Admin created: admin@medicare.com / admin123');
+    } else {
       existingAdmin.role = 'admin';
+      existingAdmin.password = hashedPassword;
       await existingAdmin.save();
+      console.log('✅ Admin account updated with password admin123');
     }
   } catch (error) {
     console.error('Database Seed Note:', error.message);
