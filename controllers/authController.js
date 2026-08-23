@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import Doctor from '../models/Doctor.js';
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -42,6 +43,20 @@ export const register = async (req, res) => {
       Photo: Photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80',
       role: role || 'patient',
     });
+
+    if (user.role === 'doctor') {
+      await Doctor.create({
+        userId: user._id,
+        doctorName: user.name,
+        specialization: req.body.specialization || 'General Medicine',
+        qualifications: req.body.qualifications || 'MBBS',
+        experience: Number(req.body.experience) || 1,
+        consultationFee: Number(req.body.consultationFee) || 50,
+        hospitalName: req.body.hospitalName || 'Central Hospital',
+        profileImage: user.Photo,
+        verificationStatus: 'pending',
+      });
+    }
 
     const token = generateToken(user);
 
