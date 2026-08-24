@@ -10,6 +10,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_51MockTestKe
 // Create Stripe Payment Intent
 export const createPaymentIntent = async (req, res) => {
   try {
+    if (req.user?.role && req.user.role !== 'patient') {
+      return res.status(403).json({
+        success: false,
+        message: `Payments are restricted to patient accounts only. Your current role: ${req.user.role}.`,
+      });
+    }
+
     const { amount, appointmentId } = req.body;
 
     if (!amount) {
@@ -51,6 +58,13 @@ export const createPaymentIntent = async (req, res) => {
 // Confirm & Record Payment
 export const confirmPayment = async (req, res) => {
   try {
+    if (req.user?.role && req.user.role !== 'patient') {
+      return res.status(403).json({
+        success: false,
+        message: `Only patients can finalize consultation bookings and payments.`,
+      });
+    }
+
     const { appointmentId, doctorId, amount, transactionId, paymentMethod } = req.body;
     const patientId = req.user._id;
 
@@ -68,13 +82,13 @@ export const confirmPayment = async (req, res) => {
     if (appointmentId) {
       await Appointment.findByIdAndUpdate(appointmentId, {
         paymentStatus: 'paid',
-        appointmentStatus: 'accepted',
+        appointmentStatus: 'pending',
       });
     }
 
     return res.status(201).json({
       success: true,
-      message: 'Payment confirmed and appointment booked!',
+      message: 'Payment recorded successfully. Appointment is pending doctor acceptance.',
       data: payment,
     });
   } catch (error) {

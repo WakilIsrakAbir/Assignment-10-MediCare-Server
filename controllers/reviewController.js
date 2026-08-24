@@ -87,6 +87,55 @@ export const updateReview = async (req, res) => {
   }
 };
 
+// Get All Reviews for a Specific Doctor (Public & Doctor Profile)
+export const getReviewsByDoctor = async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+    const reviews = await Review.find({ doctorId })
+      .populate('patientId', 'name email Photo')
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: reviews.length,
+      data: reviews,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to fetch doctor reviews', error: error.message });
+  }
+};
+
+// Get Reviews Received by Logged-In Doctor
+export const getMyDoctorReceivedReviews = async (req, res) => {
+  try {
+    // Find doctor record
+    let doctor = await Doctor.findOne({ userId: req.user._id });
+    if (!doctor) {
+      doctor = await Doctor.findOne({ doctorName: new RegExp(req.user.name, 'i') });
+    }
+
+    if (!doctor) {
+      return res.status(200).json({ success: true, count: 0, data: [] });
+    }
+
+    const reviews = await Review.find({ doctorId: doctor._id })
+      .populate('patientId', 'name email Photo')
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: reviews.length,
+      data: reviews,
+      doctorStats: {
+        rating: doctor.rating || 5.0,
+        totalReviews: reviews.length,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to fetch received reviews', error: error.message });
+  }
+};
+
 // Delete Review (Patient)
 export const deleteReview = async (req, res) => {
   try {
@@ -100,3 +149,5 @@ export const deleteReview = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Failed to delete review', error: error.message });
   }
 };
+
+

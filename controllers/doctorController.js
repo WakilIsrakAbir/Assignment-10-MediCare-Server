@@ -1,4 +1,5 @@
 import Doctor from '../models/Doctor.js';
+import User from '../models/User.js';
 
 // Get Top Featured Verified Doctors for Homepage
 export const getFeaturedDoctors = async (req, res) => {
@@ -100,6 +101,12 @@ export const getMyDoctorProfile = async (req, res) => {
         verificationStatus: 'pending',
       });
     }
+
+    // Sync User Photo if Doctor profile has an updated image
+    if (doctor.profileImage && doctor.profileImage !== req.user.Photo) {
+      await User.findByIdAndUpdate(req.user._id, { Photo: doctor.profileImage });
+    }
+
     return res.status(200).json({ success: true, data: doctor });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Error fetching doctor profile', error: error.message });
@@ -144,11 +151,15 @@ export const updateDoctorProfile = async (req, res) => {
     if (availableDays) doctor.availableDays = availableDays;
     if (availableSlots) doctor.availableSlots = availableSlots;
     if (about) doctor.about = about;
+    
+    let updatedUser = null;
     if (profileImage) {
       doctor.profileImage = profileImage;
-      try {
-        await User.findByIdAndUpdate(req.user._id, { Photo: profileImage });
-      } catch (err) {}
+      updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        { Photo: profileImage },
+        { new: true }
+      ).select('-password');
     }
 
     await doctor.save();
@@ -157,6 +168,7 @@ export const updateDoctorProfile = async (req, res) => {
       success: true,
       message: 'Professional doctor profile updated successfully.',
       data: doctor,
+      user: updatedUser || req.user,
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Error updating doctor profile', error: error.message });

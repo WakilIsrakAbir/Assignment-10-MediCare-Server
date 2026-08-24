@@ -4,6 +4,14 @@ import Doctor from '../models/Doctor.js';
 // Create new appointment
 export const createAppointment = async (req, res) => {
   try {
+    // Strictly allow only patients to book doctor appointments
+    if (req.user.role !== 'patient') {
+      return res.status(403).json({
+        success: false,
+        message: `Booking restricted. Only patient accounts are permitted to book doctor appointments (your role: ${req.user.role}).`,
+      });
+    }
+
     const { doctorId, appointmentDate, appointmentTime, symptoms, fee } = req.body;
     const patientId = req.user._id;
 

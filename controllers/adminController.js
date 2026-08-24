@@ -1,10 +1,9 @@
+import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Doctor from '../models/Doctor.js';
 import Appointment from '../models/Appointment.js';
 import Payment from '../models/Payment.js';
 import Review from '../models/Review.js';
-
-import { memoryUsers, memoryDoctors } from './authController.js';
 
 // Get All Users (Real Data)
 export const getAllUsers = async (req, res) => {
@@ -21,21 +20,10 @@ export const getAllUsers = async (req, res) => {
     if (role && role !== 'All') query.role = role;
     if (status && status !== 'All') query.status = status;
 
-    let users = [];
-    try {
-      users = await User.find(query).select('-password').sort({ createdAt: -1 });
-    } catch (dbErr) {
-      users = Array.from(memoryUsers.values());
-    }
-
-    if (users.length === 0 && memoryUsers.size > 0) {
-      users = Array.from(memoryUsers.values());
-    }
-
+    const users = await User.find(query).select('-password').sort({ createdAt: -1 });
     return res.status(200).json({ success: true, count: users.length, data: users });
   } catch (error) {
-    const memUsers = Array.from(memoryUsers.values());
-    return res.status(200).json({ success: true, count: memUsers.length, data: memUsers });
+    return res.status(500).json({ success: false, message: 'Failed to fetch users', error: error.message });
   }
 };
 
@@ -43,18 +31,7 @@ export const getAllUsers = async (req, res) => {
 export const toggleUserStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    let user = null;
-    try {
-      user = await User.findByIdAndUpdate(req.params.id, { status }, { new: true }).select('-password');
-    } catch (dbErr) {
-      for (const [email, u] of memoryUsers.entries()) {
-        if (u._id === req.params.id) {
-          u.status = status;
-          user = u;
-          break;
-        }
-      }
-    }
+    const user = await User.findByIdAndUpdate(req.params.id, { status }, { new: true }).select('-password');
     return res.status(200).json({ success: true, message: `User status changed to ${status}`, data: user });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Failed to update status', error: error.message });
@@ -64,16 +41,7 @@ export const toggleUserStatus = async (req, res) => {
 // Delete User
 export const deleteUser = async (req, res) => {
   try {
-    try {
-      await User.findByIdAndDelete(req.params.id);
-    } catch (dbErr) {
-      for (const [email, u] of memoryUsers.entries()) {
-        if (u._id === req.params.id) {
-          memoryUsers.delete(email);
-          break;
-        }
-      }
-    }
+    await User.findByIdAndDelete(req.params.id);
     return res.status(200).json({ success: true, message: 'User deleted successfully' });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Failed to delete user', error: error.message });
@@ -83,21 +51,10 @@ export const deleteUser = async (req, res) => {
 // Get All Doctors for Admin Management
 export const getAdminDoctors = async (req, res) => {
   try {
-    let doctors = [];
-    try {
-      doctors = await Doctor.find().sort({ createdAt: -1 });
-    } catch (dbErr) {
-      doctors = Array.from(memoryDoctors.values());
-    }
-
-    if (doctors.length === 0 && memoryDoctors.size > 0) {
-      doctors = Array.from(memoryDoctors.values());
-    }
-
+    const doctors = await Doctor.find().sort({ createdAt: -1 });
     return res.status(200).json({ success: true, count: doctors.length, data: doctors });
   } catch (error) {
-    const memDocs = Array.from(memoryDoctors.values());
-    return res.status(200).json({ success: true, count: memDocs.length, data: memDocs });
+    return res.status(500).json({ success: false, message: 'Failed to fetch doctors', error: error.message });
   }
 };
 
@@ -106,28 +63,31 @@ export const updateDoctorVerification = async (req, res) => {
   try {
     const { verificationStatus } = req.body;
     let doctor = null;
-    try {
+
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
       doctor = await Doctor.findByIdAndUpdate(
         req.params.id,
         { verificationStatus },
         { new: true }
       );
-    } catch (dbErr) {}
+    }
 
     if (!doctor) {
-      for (const [key, doc] of memoryDoctors.entries()) {
-        if (doc._id === req.params.id || key === req.params.id || doc.userId === req.params.id) {
-          doc.verificationStatus = verificationStatus;
-          doctor = doc;
-          break;
-        }
-      }
+      doctor = await Doctor.findOneAndUpdate(
+        { $or: [{ userId: req.params.id }, { doctorName: req.params.id }] },
+        { verificationStatus },
+        { new: true }
+      );
+    }
+
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor record not found.' });
     }
 
     return res.status(200).json({
       success: true,
-      message: `Doctor verification updated to ${verificationStatus}`,
-      data: doctor || { verificationStatus },
+      message: `Doctor verification status updated to ${verificationStatus}`,
+      data: doctor,
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Failed to update verification', error: error.message });
