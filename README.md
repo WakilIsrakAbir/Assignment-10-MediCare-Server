@@ -213,5 +213,3 @@ BETTER_AUTH_URL=https://assignment-10-medi-care-server.vercel.app
 
 ---
 
-## 📜 License
-This project is licensed under the ISC License. © 2026 MediCare Connect.
