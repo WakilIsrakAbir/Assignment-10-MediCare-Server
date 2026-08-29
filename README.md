@@ -171,21 +171,6 @@ A robust, scalable RESTful API server for **MediCare Connect**, powering online 
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/stats` | Dynamic count of Doctors, Patients, Appointments, Reviews | Public |
 
----
-
-## ⚙️ Environment Variables
-
-Create a `.env` file in the root of the server directory:
-
-```env
-PORT=5000
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/medicareDB?retryWrites=true&w=majority
-JWT_SECRET=medicare_secret_jwt_key_2026_secure
-CLIENT_URL=https://assignment-10-medi-care-client.vercel.app
-STRIPE_SECRET_KEY=sk_test_...
-BETTER_AUTH_SECRET=medicare_better_auth_secret_key_2026_secure
-BETTER_AUTH_URL=https://assignment-10-medi-care-server.vercel.app
-```
 
 ---
 
