@@ -364,6 +364,22 @@ export const googleAuth = async (req, res) => {
         };
         memoryUsers.set(cleanEmail, user);
       }
+    } else {
+      // Always update Photo with Google Photo if available
+      let hasChanges = false;
+      if (photo && user.Photo !== photo) {
+        user.Photo = photo;
+        hasChanges = true;
+      }
+      if (name && (!user.name || user.name === 'Google User')) {
+        user.name = name;
+        hasChanges = true;
+      }
+      if (hasChanges && user.save) {
+        try {
+          await user.save();
+        } catch (saveErr) {}
+      }
     }
 
     const token = generateToken(user);
