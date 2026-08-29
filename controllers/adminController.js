@@ -195,3 +195,26 @@ export const getAdminAnalytics = async (req, res) => {
     });
   }
 };
+
+// Get All Payments / Transaction Records for Admin
+export const getAllPayments = async (req, res) => {
+  try {
+    const payments = await Payment.find()
+      .populate('patientId', 'name email Photo phone')
+      .populate('doctorId', 'doctorName specialization hospitalName')
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: payments.length,
+      data: payments,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch payments',
+      error: error.message,
+    });
+  }
+};
+
