@@ -35,11 +35,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan('dev'));
 
-// MongoDB Connection
+// MongoDB Connection with Serverless Caching
+let isConnected = false;
 const connectDB = async () => {
+  if (isConnected || mongoose.connection.readyState === 1) {
+    isConnected = true;
+    return;
+  }
   try {
     if (process.env.MONGODB_URI) {
-      await mongoose.connect(process.env.MONGODB_URI);
+      const db = await mongoose.connect(process.env.MONGODB_URI);
+      isConnected = db.connections[0].readyState === 1;
       console.log('MongoDB Connected Successfully');
       await seedInitialData();
     } else {
@@ -49,6 +55,12 @@ const connectDB = async () => {
     console.error('MongoDB Connection Error:', error.message);
   }
 };
+
+// Middleware to ensure DB connection
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
 
 // Mount Better Auth & API Routes
 app.all('/api/better-auth/*splat', async (req, res, next) => {
@@ -88,8 +100,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`MediCare Server running on port ${PORT}`);
-  connectDB();
-});
+// Start Server (Standalone / Local)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`MediCare Server running on port ${PORT}`);
+    connectDB();
+  });
+}
+
+export default app;
