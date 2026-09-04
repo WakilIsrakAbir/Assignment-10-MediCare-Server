@@ -19,7 +19,11 @@ export const getAuth = () => {
   authInstance = betterAuth({
     database: mongodbAdapter(db),
     secret: process.env.BETTER_AUTH_SECRET || process.env.JWT_SECRET || 'medicare_better_auth_secret_dev_key_12345',
-    baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
+    baseURL:
+      process.env.BETTER_AUTH_URL ||
+      (process.env.VERCEL || process.env.NODE_ENV === 'production'
+        ? 'https://assignment-10-medi-care-server.vercel.app'
+        : 'http://localhost:5000'),
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 6,
@@ -68,8 +72,9 @@ export const getAuth = () => {
     trustedOrigins: [
       'http://localhost:3000',
       'http://127.0.0.1:3000',
-      process.env.CLIENT_URL || 'http://localhost:3000',
-    ],
+      'https://assignment-10-medi-care-client.vercel.app',
+      process.env.CLIENT_URL,
+    ].filter(Boolean),
   });
 
   return authInstance;
